@@ -2673,7 +2673,7 @@ static int gtp_fb_notifier_callback(struct notifier_block *noti,
 				schedule_work(&ts->fb_notify_work);
 			else
 				gtp_resume(ts);
-		} else if (*blank == FB_BLANK_POWERDOWN) {
+		} else {
 			dev_dbg(&ts->client->dev, "ts_suspend");
 
 			if (ts->pdata->resume_in_workqueue)
