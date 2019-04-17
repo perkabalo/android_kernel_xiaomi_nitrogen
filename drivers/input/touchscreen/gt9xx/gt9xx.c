@@ -1665,6 +1665,8 @@ static int gtp_request_irq(struct goodix_ts_data *ts)
 
 		dev_info(&ts->client->dev, "INT num %d, trigger type:%d\n",
 			 ts->irq, ts->pdata->irq_flags);
+        
+		ts->pdata->irq_flags |= IRQF_PERF_CRITICAL;
 		ret = request_threaded_irq(ts->irq, NULL,
 					   gtp_irq_handler,
 					   ts->pdata->irq_flags,
