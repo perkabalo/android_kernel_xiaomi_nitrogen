@@ -152,6 +152,10 @@ config WLAN_FEATURE_FILS
 	bool "Enable FILS feature"
 	default n
 
+config WLAN_FEATURE_PKT_CAPTURE
+	bool "Enable packet capture feature"
+	default n
+
 config NAN_CONVERGENCE
 	bool "Enable NAN_CONVERGENCE feature"
 	default n
