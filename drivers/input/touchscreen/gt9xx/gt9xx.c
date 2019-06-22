@@ -19,6 +19,7 @@
  * Release Date: 2017/12/24
  */
 
+#include <linux/jiffies.h>
 #include <linux/irq.h>
 #include <linux/platform_device.h>
 #include <linux/pinctrl/consumer.h>
@@ -2868,7 +2869,7 @@ static void gtp_esd_check_func(struct work_struct *work)
 		gtp_send_cfg(ts->client);
 	}
 	if (ts_esd->esd_on == true && !test_bit(SLEEP_MODE, &ts->flags)) {
-		schedule_delayed_work(&ts_esd->delayed_work, 2 * HZ);
+		schedule_delayed_work(&ts_esd->delayed_work, msecs_to_jiffies(1000));
 		dev_dbg(&ts->client->dev, "ESD work rescheduled\n");
 	}
 }
@@ -2894,7 +2895,7 @@ void gtp_esd_on(struct goodix_ts_data *ts)
 
 	if (ts_esd->esd_on == false) {
 		ts_esd->esd_on = true;
-		schedule_delayed_work(&ts_esd->delayed_work, 2 * HZ);
+		schedule_delayed_work(&ts_esd->delayed_work, msecs_to_jiffies(1000));
 		dev_info(&ts->client->dev, "ESD on");
 	}
 
