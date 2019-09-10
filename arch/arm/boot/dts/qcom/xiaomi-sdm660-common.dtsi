@@ -119,12 +119,6 @@
 	qcom,usbplug-cc-gpio = <&tlmm 58 0>;
 };
 
-&pm660l_wled {
-	qcom,en-cabc;
-	qcom,fs-curr-ua = <20000>;
-	qcom,led-strings-list = [00 01];
-};
-
 &dsi_tianma_fhd_ili7807d_video {
 	qcom,mdss-dsi-panel-timings-phy-v2 = [26 20 0a 0d 06 03 04 a0
 		26 20 0a 0d 06 03 04 a0

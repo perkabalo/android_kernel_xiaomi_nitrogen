@@ -42,11 +42,11 @@
 		qcom,mdss-dsi-v-bottom-border = <0>;
 		qcom,mdss-dsi-bpp = <24>;
 		qcom,mdss-dsi-color-order = "0";
-		qcom,mdss-dsi-underflow-color = <0x0>;
+		qcom,mdss-dsi-underflow-color = <0xff>;
 		qcom,mdss-dsi-border-color = <0>;
 		qcom,mdss-dsi-on-command = [
 				29 00 00 00 00 00 04 FF 78 07 00
-				29 00 00 00 00 00 03 51 0F FF
+				29 00 00 00 00 00 03 51 0B 84
 				15 00 00 00 00 00 02 53 24
 				29 00 00 00 00 00 03 68 05 00
 				15 00 00 00 00 00 02 35 00
@@ -176,5 +176,13 @@
 			29 00 00 00 00 00 04 FF 78 07 05
 			15 00 00 00 00 00 02 31 00
 			29 01 00 00 00 00 04 FF 78 07 00];
+        qcom,mdss-dsi-dispparam-hbm-l1-on-command = [
+            29 01 00 00 00 00 03 51 0C CC];
+        qcom,mdss-dsi-dispparam-hbm-l2-on-command = [
+            29 01 00 00 00 00 03 51 0E 65];
+        qcom,mdss-dsi-dispparam-hbm-l3-on-command = [
+            29 01 00 00 00 00 03 51 0F FF];
+        qcom,mdss-dsi-dispparam-hbm-off-command = [
+            29 01 00 00 00 00 03 51 0B 84];
 	};
 };

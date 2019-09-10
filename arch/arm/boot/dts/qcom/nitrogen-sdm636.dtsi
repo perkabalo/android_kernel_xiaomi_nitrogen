@@ -57,8 +57,19 @@
 		};
 	};
 };
+
+&pm660l_wled {
+        qcom,en-cabc;
+        qcom,fs-curr-ua = <25000>;
+        qcom,led-strings-list = [00 01];
+};
+
 &ssc_sensors {
 	qcom,firmware-name = "adsp_e4";
+};
+
+&qcom_seecom {
+	qcom,fde-key-size;
 };
 
 &firmware {

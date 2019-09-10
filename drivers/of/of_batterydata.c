@@ -372,6 +372,8 @@ struct device_node *of_batterydata_get_best_profile(
 		}
 		rc = of_property_read_string(node, "qcom,battery-type",
 							&battery_type);
+		if (!rc && strcmp(battery_type, "itech_3000mah") == 0)
+				generic_node = node;
 	}
 
 	if (best_node == NULL) {
