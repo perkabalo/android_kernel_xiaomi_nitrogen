@@ -121,7 +121,7 @@ int gtp_i2c_read(struct i2c_client *client, u8 *buf, int len)
 
 			dev_info(&client->dev, "I2c read retry[%d]:0x%x\n",
 				 retry + 1, address);
-			udelay(2000);
+			udelay(usecs_to_jiffies(2000));
 		}
 
 		if (unlikely(retry == RETRY_MAX_TIMES)) {
@@ -198,7 +198,7 @@ int gtp_i2c_write(struct i2c_client *client, u8 *buf, int len)
 			}
 
 			dev_info(&client->dev, "I2C write retry[%d]\n", retry + 1);
-			udelay(2000);
+			udelay(usecs_to_jiffies(2000));
 		}
 
 		if (unlikely(retry == RETRY_MAX_TIMES)) {
@@ -737,12 +737,12 @@ void gtp_int_sync(struct goodix_ts_data *ts, s32 ms)
 
 	if (ts->pinctrl.pinctrl) {
 		gtp_int_output(ts, 0);
-		msleep(ms);
+		msleep(msecs_to_jiffies(ms));
 		pinctrl_select_state(ts->pinctrl.pinctrl,
 				     ts->pinctrl.int_input);
 	} else if (gpio_is_valid(ts->pdata->irq_gpio)) {
 		gpio_direction_output(ts->pdata->irq_gpio, 0);
-		msleep(ms);
+		msleep(msecs_to_jiffies(ms));
 		gpio_direction_input(ts->pdata->irq_gpio);
 	} else {
 		dev_err(&ts->client->dev, "Failed sync int pin\n");
@@ -771,13 +771,13 @@ void gtp_reset_guitar(struct i2c_client *client, s32 ms)
 	}
 
 	gpio_direction_output(ts->pdata->rst_gpio, 0);
-	usleep_range(ms * 1000, ms * 1000 + 100);	/*  T2: > 10ms */
+	usleep_range(usecs_to_jiffies(10000), usecs_to_jiffies(11000));	/*  T2: > 10ms */
 	gtp_int_output(ts, client->addr == 0x14);
-	usleep_range(2000, 3000);		/*  T3: > 100us (2ms)*/
+	usleep_range(usecs_to_jiffies(2000), usecs_to_jiffies(3000));		/*  T3: > 100us (2ms)*/
 	gpio_direction_output(ts->pdata->rst_gpio, 1);
-	usleep_range(6000, 7000);		/*  T4: > 5ms */
+	usleep_range(usecs_to_jiffies(6000), usecs_to_jiffies(7000));		/*  T4: > 5ms */
 	gpio_direction_input(ts->pdata->rst_gpio);
-	gtp_int_sync(ts, 50);
+	gtp_int_sync(ts, msecs_to_jiffies(50));
 
 	if (ts->pdata->esd_protect)
 		gtp_init_ext_watchdog(client);
@@ -830,7 +830,7 @@ static int gtp_enter_doze(struct goodix_ts_data *ts)
 			return ret;
 		}
 
-		usleep_range(10000, 11000);
+		usleep_range(usecs_to_jiffies(10000), usecs_to_jiffies(11000));
 	}
 
 	dev_err(&ts->client->dev, "Failed enter doze mode\n");
@@ -845,7 +845,7 @@ static s8 gtp_enter_sleep(struct goodix_ts_data *ts)
 	u8 i2c_control_buf[3] = {(u8)(GTP_REG_SLEEP >> 8), (u8)GTP_REG_SLEEP, 5};
 
 	gtp_int_output(ts, 0);
-	usleep_range(5000, 6000);
+	usleep_range(usecs_to_jiffies(5000), usecs_to_jiffies(6000));
 
 	while (retry++ < 5) {
 		ret = gtp_i2c_write(ts->client, i2c_control_buf, 3);
@@ -855,7 +855,7 @@ static s8 gtp_enter_sleep(struct goodix_ts_data *ts)
 			return ret;
 		}
 
-		usleep_range(10000, 11000);
+		usleep_range(usecs_to_jiffies(10000), usecs_to_jiffies(11000));
 	}
 
 	dev_err(&ts->client->dev, "Failed send sleep cmd\n");
@@ -869,12 +869,12 @@ static int gtp_wakeup_sleep(struct goodix_ts_data *ts)
 
 	while (retry++ < 10) {
 		gtp_int_output(ts, 1);
-		usleep_range(5000, 6000);
+		usleep_range(usecs_to_jiffies(5000), usecs_to_jiffies(6000));
 		ret = gtp_i2c_test(ts->client);
 
 		if (!ret) {
 			dev_info(&ts->client->dev, "Success wakeup sleep\n");
-			gtp_int_sync(ts, 25);
+			gtp_int_sync(ts, msecs_to_jiffies(25));
 
 			if (ts->pdata->esd_protect)
 				gtp_init_ext_watchdog(ts->client);
@@ -1079,7 +1079,7 @@ static s32 gtp_init_panel(struct goodix_ts_data *ts)
 	if (ret < 0)
 		dev_err(&ts->client->dev, "Send config error\n");
 	else
-		usleep_range(10000, 11000); /* 10 ms */
+		usleep_range(usecs_to_jiffies(10000), usecs_to_jiffies(11000)); /* 10 ms */
 
 	/* restore config version */
 	cfg->data[GTP_ADDR_LENGTH] = drv_cfg_version;
@@ -1383,7 +1383,7 @@ static ssize_t gtp_reset_store(struct device *dev,
 		return -EINVAL;
 	}
 
-	gtp_reset_guitar(data->client, 20);
+	gtp_reset_guitar(data->client, msecs_to_jiffies(20));
 	return count;
 }
 
@@ -1534,7 +1534,7 @@ int gtp_i2c_test(struct i2c_client *client)
 			return 0;
 
 		dev_err(&client->dev, "GTP i2c test failed time %d\n", retry);
-		usleep_range(10000, 11000); /* 10 ms */
+		usleep_range(usecs_to_jiffies(10000), usecs_to_jiffies(11000)); /* 10 ms */
 	}
 
 	return -EAGAIN;
@@ -2198,7 +2198,7 @@ static ssize_t tpdbg_write(struct file *file, const char __user *buf, size_t siz
 		gtp_esd_off(ts);
 		gtp_enter_sleep(ts);
 	} else if (!strncmp(cmd, "tp-sd-off", 9)) {
-		gtp_reset_guitar(ts->client, 20);
+		gtp_reset_guitar(ts->client, msecs_to_jiffies(20));
 		gtp_esd_on(ts);
 	}
 out:
@@ -2565,7 +2565,7 @@ static void gtp_suspend(struct goodix_ts_data *ts)
 
 	/*  to avoid waking up while not sleeping */
 	/*	delay 48 + 10ms to ensure reliability */
-	msleep(GTP_58_DLY_MS);
+	msleep(msecs_to_jiffies(GTP_58_DLY_MS));
 }
 
 static int gtp_gesture_wakeup(struct goodix_ts_data *ts)
@@ -2814,7 +2814,7 @@ static void gtp_esd_check_func(struct work_struct *work)
 	if (test_bit(SLEEP_MODE, &ts->flags) ||
 	    test_bit(FW_UPDATE_RUNNING, &ts->flags)) {
 		dev_dbg(&ts->client->dev,
-			"Esd cancled by power_suspend or fw_update!");
+			"Esd cancelled by power_suspend or fw_update!");
 		return;
 	}
 
@@ -2860,17 +2860,17 @@ static void gtp_esd_check_func(struct work_struct *work)
 		esd_buf[4] = 0x01;
 		gtp_i2c_write(ts->client, esd_buf, 5);
 		/* TODO: Is power off really need? */
-		msleep(GTP_50_DLY_MS);
+		msleep(msecs_to_jiffies(GTP_50_DLY_MS));
 		gtp_power_off(ts);
-		msleep(GTP_20_DLY_MS);
+		msleep(msecs_to_jiffies(GTP_20_DLY_MS));
 		gtp_power_on(ts);
-		msleep(GTP_20_DLY_MS);
+		msleep(msecs_to_jiffies(GTP_20_DLY_MS));
 		gtp_reset_guitar(ts->client, 50);
-		msleep(GTP_50_DLY_MS);
+		msleep(msecs_to_jiffies(GTP_50_DLY_MS));
 		gtp_send_cfg(ts->client);
 	}
 	if (ts_esd->esd_on == true && !test_bit(SLEEP_MODE, &ts->flags)) {
-		schedule_delayed_work(&ts_esd->delayed_work, 2 * HZ);
+		schedule_delayed_work(&ts_esd->delayed_work, msecs_to_jiffies(2000));
 		dev_dbg(&ts->client->dev, "ESD work rescheduled\n");
 	}
 }
@@ -2896,7 +2896,7 @@ void gtp_esd_on(struct goodix_ts_data *ts)
 
 	if (ts_esd->esd_on == false) {
 		ts_esd->esd_on = true;
-		schedule_delayed_work(&ts_esd->delayed_work, 2 * HZ);
+		schedule_delayed_work(&ts_esd->delayed_work, msecs_to_jiffies(2000));
 		dev_info(&ts->client->dev, "ESD on");
 	}
 

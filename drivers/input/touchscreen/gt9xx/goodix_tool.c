@@ -351,7 +351,7 @@ ssize_t goodix_tool_write(struct file *filp,
 				cmd_head.addr_len],
 				cmd_head.data_len + cmd_head.addr_len);
 		if (cmd_head.delay)
-			msleep(cmd_head.delay);
+			msleep(msecs_to_jiffies(cmd_head.delay));
 	} else if (3 == cmd_head.wr) {
 		if (cmd_head.data_len > DATA_LENGTH) {
 			dev_err(&gt_client->dev,
@@ -477,7 +477,7 @@ ssize_t goodix_tool_read(struct file *file, char __user *page,
 		}
 
 		if (cmd_head.delay)
-			msleep(cmd_head.delay);
+			msleep(msecs_to_jiffies(cmd_head.delay));
 
 		data_len = cmd_head.data_len;
 		addr = (cmd_head.addr[0] << 8) + cmd_head.addr[1];

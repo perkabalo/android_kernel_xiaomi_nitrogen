@@ -42,16 +42,16 @@
 #include <linux/mdss_io_util.h>
 
 #define FPC_TTW_HOLD_TIME 2000
-#define FP_UNLOCK_REJECTION_TIMEOUT (FPC_TTW_HOLD_TIME - 500)
+#define FP_UNLOCK_REJECTION_TIMEOUT 1500
 
 #define RESET_LOW_SLEEP_MIN_US 5000
-#define RESET_LOW_SLEEP_MAX_US (RESET_LOW_SLEEP_MIN_US + 100)
+#define RESET_LOW_SLEEP_MAX_US 5100
 #define RESET_HIGH_SLEEP1_MIN_US 100
-#define RESET_HIGH_SLEEP1_MAX_US (RESET_HIGH_SLEEP1_MIN_US + 100)
+#define RESET_HIGH_SLEEP1_MAX_US 200
 #define RESET_HIGH_SLEEP2_MIN_US 5000
-#define RESET_HIGH_SLEEP2_MAX_US (RESET_HIGH_SLEEP2_MIN_US + 100)
+#define RESET_HIGH_SLEEP2_MAX_US 5100
 #define PWR_ON_SLEEP_MIN_US 100
-#define PWR_ON_SLEEP_MAX_US (PWR_ON_SLEEP_MIN_US + 900)
+#define PWR_ON_SLEEP_MAX_US 1000
 
 #define NUM_PARAMS_REG_ENABLE_SET 2
 
@@ -251,17 +251,17 @@ static int hw_reset(struct fpc1020_data *fpc1020)
 
 	if (rc)
 		goto exit;
-	usleep_range(RESET_HIGH_SLEEP1_MIN_US, RESET_HIGH_SLEEP1_MAX_US);
+	usleep_range(usecs_to_jiffies(RESET_HIGH_SLEEP1_MIN_US), usecs_to_jiffies(RESET_HIGH_SLEEP1_MAX_US));
 
 	rc = select_pin_ctl(fpc1020, "fpc1020_reset_reset");
 	if (rc)
 		goto exit;
-	usleep_range(RESET_LOW_SLEEP_MIN_US, RESET_LOW_SLEEP_MAX_US);
+	usleep_range(usecs_to_jiffies(RESET_LOW_SLEEP_MIN_US), usecs_to_jiffies(RESET_LOW_SLEEP_MAX_US));
 
 	rc = select_pin_ctl(fpc1020, "fpc1020_reset_active");
 	if (rc)
 		goto exit;
-	usleep_range(RESET_HIGH_SLEEP2_MIN_US, RESET_HIGH_SLEEP2_MAX_US);
+	usleep_range(usecs_to_jiffies(RESET_HIGH_SLEEP2_MIN_US), usecs_to_jiffies(RESET_HIGH_SLEEP2_MAX_US));
 
 	irq_gpio = gpio_get_value(fpc1020->irq_gpio);
 	dev_info(dev, "IRQ after reset %d\n", irq_gpio);
@@ -331,7 +331,7 @@ static int device_prepare(struct fpc1020_data *fpc1020, bool enable)
 		if (rc)
 			goto free_irq_exit;
 
-		usleep_range(PWR_ON_SLEEP_MIN_US, PWR_ON_SLEEP_MAX_US);
+		usleep_range(usecs_to_jiffies(PWR_ON_SLEEP_MIN_US), usecs_to_jiffies(PWR_ON_SLEEP_MAX_US));
 
 		/* As we can't control chip select here the other part of the
 		 * sensor driver eg. the TEE driver needs to do a _SOFT_ reset
@@ -345,7 +345,7 @@ static int device_prepare(struct fpc1020_data *fpc1020, bool enable)
 		rc = 0;
 		(void)select_pin_ctl(fpc1020, "fpc1020_reset_reset");
 
-		usleep_range(PWR_ON_SLEEP_MIN_US, PWR_ON_SLEEP_MAX_US);
+		usleep_range(usecs_to_jiffies(PWR_ON_SLEEP_MIN_US), usecs_to_jiffies(PWR_ON_SLEEP_MAX_US));
 
 		(void)vreg_setup(fpc1020, "vdd_ana", false);
 free_irq_exit:
@@ -494,7 +494,7 @@ static const struct attribute_group attribute_group = {
 static void notification_work(struct work_struct *work)
 {
 	pr_debug("%s: unblank\n", __func__);
-	mdss_prim_panel_fb_unblank(FP_UNLOCK_REJECTION_TIMEOUT);
+	mdss_prim_panel_fb_unblank(msecs_to_jiffies(FP_UNLOCK_REJECTION_TIMEOUT));
 }
 
 static irqreturn_t fpc1020_irq_handler(int irq, void *handle)
@@ -677,7 +677,7 @@ static int fpc1020_remove(struct platform_device *pdev)
 
 static struct of_device_id fpc1020_of_match[] = {
 	{ .compatible = "fpc,fpc1020", },
-	{}
+	{ }
 };
 MODULE_DEVICE_TABLE(of, fpc1020_of_match);
 
